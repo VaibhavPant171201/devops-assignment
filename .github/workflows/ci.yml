@@ -1,16 +1,16 @@
-name: CI - Build & Push Docker Image
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, dev ]   # runs when you push to main or dev
+    branches: [ main, dev ]
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/react-app
+  IMAGE_NAME: vaibhav171201/react-app
 
 jobs:
+  # CI: Build & Push Docker Image
   build-and-push:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -37,4 +37,20 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.IMAGE_NAME }}:latest
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+  # CD: Simulated Deploy Docker Image
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Simulate deployment
+        run: |
+          echo "Deployment step: Pulling Docker image from Docker Hub"
+          echo "docker pull ${{ env.IMAGE_NAME }}:latest"
+          echo "docker stop react-app || true"
+          echo "docker rm react-app || true"
+          echo "docker run -d --name react-app -p 80:80 ${{ env.IMAGE_NAME }}:latest"
+          echo "Note: No actual server available, so this step is only illustrative"
